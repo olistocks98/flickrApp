@@ -27,7 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,77 +35,97 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     state: HomeState,
     updateSearch: (String) -> Unit,
+    search: () -> Unit,
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchText = state.searchText.collectAsState()
     val photos = state.searchedPhotos.collectAsState()
-    val searchPadding = animateDpAsState(
-        targetValue = if (expanded.not()) 16.dp else 0.dp,
-        animationSpec = tween(200)
-    )
+    val searchPadding =
+        animateDpAsState(
+            targetValue = if (expanded.not()) 16.dp else 0.dp,
+            animationSpec = tween(200),
+        )
 
     Box(Modifier.fillMaxSize()) {
-        SearchBar(
-            modifier = Modifier
-                .padding(horizontal = searchPadding.value)
-                .align(Alignment.TopCenter),
-            inputField = {
-                SearchBarDefaults.InputField(
-                    query = searchText.value,
-                    onQueryChange = { updateSearch(it) },
-                    onSearch = { expanded = false },
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    placeholder = { Text("Search Photos") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                )
-            },
-            expanded = expanded,
-            onExpandedChange = { },
-        ) {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                searchSuggestions.value.forEach { suggestion ->
-                    ListItem(
-                        headlineContent = { Text(suggestion) },
-                        leadingContent = { Icon(Icons.Filled.Search, contentDescription = null) },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        Box(Modifier.fillMaxSize()) {
+            SearchBar(
+                modifier =
+                    Modifier
+                        .padding(horizontal = searchPadding.value).clickable { expanded = true }
+                        .align(Alignment.TopCenter),
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = searchText.value,
+                        onQueryChange = { updateSearch(it) },
+                        onSearch = {
+                            search()
+                            expanded = false
+                        },
+                        expanded = expanded,
+                        onExpandedChange = {
+                            expanded = it
+                        },
+                        placeholder = { Text("Search Photos") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                         modifier =
-                        Modifier
-                            .clickable {
-                                updateSearch(suggestion)
-                                expanded = false
-                            }
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                            Modifier.clickable {
+                                if (expanded.not()) expanded = true;
+                            },
                     )
+                },
+                expanded = expanded,
+                onExpandedChange = {  }
+            ) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    searchSuggestions.value.forEach { suggestion ->
+                        ListItem(
+                            headlineContent = { Text(suggestion) },
+                            leadingContent = {
+                                Icon(
+                                    Icons.Filled.Search,
+                                    contentDescription = null,
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier =
+                                Modifier
+                                    .clickable {
+                                        updateSearch(suggestion)
+                                        search()
+                                        expanded = false
+                                        Timber.d("Meep Suggestion")
+                                    }.fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                        )
+                    }
                 }
             }
-        }
 
-        LazyColumn(
-            contentPadding =
-            PaddingValues(
-                top = SearchBarDefaults.InputFieldHeight,
-            ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(photos.value) {
-                Box(Modifier.fillMaxWidth()){
-
+            LazyColumn(
+                contentPadding =
+                    PaddingValues(
+                        top = SearchBarDefaults.InputFieldHeight,
+                    ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(photos.value) {
+                    Box(Modifier.fillMaxWidth()) {
+                    }
+                    AsyncImage(
+                        model = it.url,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = ContentScale.Crop,
+                    )
                 }
-                AsyncImage(
-                    model = it.url,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.Crop
-                )
             }
         }
     }

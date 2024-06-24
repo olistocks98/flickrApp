@@ -39,7 +39,11 @@ class MainActivity : ComponentActivity() {
             startDestination = "screenHome",
         ) {
             composable("screenHome", content = {
-                HomeScreen(viewModel.state, updateSearch = { viewModel.updateSearchText(it) })
+                HomeScreen(
+                    viewModel.state,
+                    updateSearch = { viewModel.updateSearchText(it) },
+                    search = { viewModel.search() },
+                )
             })
         }
     }

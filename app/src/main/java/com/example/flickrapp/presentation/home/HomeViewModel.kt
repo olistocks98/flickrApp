@@ -38,7 +38,7 @@ class HomeViewModel
             searchPhotos()
         }
 
-        fun searchPhotos() {
+        private fun searchPhotos() {
             viewModelScope.launch {
                 val photosApiResponse = photoRepository.doNetworkCall(_searchText.value)
                 val photoList =
@@ -49,12 +49,17 @@ class HomeViewModel
                             title = photo.title,
                         )
                     }
+                _searchedPhotos.value = listOf()
                 _searchedPhotos.value = photoList
             }
         }
 
         fun updateSearchText(newSearchText: String) {
             _searchText.value = newSearchText
+        }
+
+        fun search() {
+            searchPhotos()
         }
     }
 
