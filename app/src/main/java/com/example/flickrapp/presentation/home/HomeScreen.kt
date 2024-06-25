@@ -120,13 +120,14 @@ fun HomeScreen(
             if (searchUser.value != null || navigator.canNavigateBack()) {
                 BackHandler {
                     updateSearchByUser(null)
+                    ListDetailPaneScaffoldRole.List
                 }
                 TopAppBar(
                     title = { Text(searchUser.value?.username ?: "") },
                     navigationIcon = {
                         IconButton(onClick = {
                             updateSearchByUser(null)
-                            navigator.navigateBack()
+                            ListDetailPaneScaffoldRole.List
                         }) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, "back")
                         }
@@ -136,7 +137,6 @@ fun HomeScreen(
         },
         content = { contentPadding ->
             Box(Modifier.padding(contentPadding).fillMaxSize()) {
-                navigator.canNavigateBack()
                 ListDetailPaneScaffold(
                     directive = navigator.scaffoldDirective,
                     value = navigator.scaffoldValue,
@@ -185,21 +185,24 @@ fun HomeScreen(
                         }
                     },
                 )
-                Box(Modifier.align(Alignment.TopCenter)){
-                    PhotosSearch(
-                        searchPadding = searchPadding.value,
-                        expanded = expanded,
-                        setExpanded = {setExpanded -> expanded = setExpanded},
-                        searchText = searchText.value,
-                        updateSearch = {updateSearch(it)},
-                        search = {search()},
-                        dropdownExpanded = dropdownExpanded,
-                        tagSearchMode = tagSearchMode.value,
-                        setTagSearchMode = {setTagSearchMode(it)},
-                        searchSuggestions = searchSuggestions.value,
-                        setDropdownExpanded = {dropdownExpanded = it}
-                    )
+                if (searchUser.value == null && navigator.canNavigateBack().not()){
+                    Box(Modifier.align(Alignment.TopCenter)){
+                        PhotosSearch(
+                            searchPadding = searchPadding.value,
+                            expanded = expanded,
+                            setExpanded = {setExpanded -> expanded = setExpanded},
+                            searchText = searchText.value,
+                            updateSearch = {updateSearch(it)},
+                            search = {search()},
+                            dropdownExpanded = dropdownExpanded,
+                            tagSearchMode = tagSearchMode.value,
+                            setTagSearchMode = {setTagSearchMode(it)},
+                            searchSuggestions = searchSuggestions.value,
+                            setDropdownExpanded = {dropdownExpanded = it}
+                        )
+                    }
                 }
+
             }
         },
     )
