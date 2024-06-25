@@ -41,8 +41,9 @@ class MainActivity : ComponentActivity() {
             composable("screenHome", content = {
                 HomeScreen(
                     viewModel.state,
-                    updateSearch = { viewModel.updateSearchText(it) },
+                    updateSearch = {text->  viewModel.updateSearchText(text) },
                     search = { viewModel.search() },
+                    updateSearchByUser = {nsid -> viewModel.updateSearchUser(nsid) }
                 )
             })
         }

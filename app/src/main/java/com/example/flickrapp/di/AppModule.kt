@@ -1,9 +1,11 @@
 package com.example.flickrapp.di
 
 import com.example.flickrapp.constants.FLICKR_BASE_URL
-import com.example.flickrapp.data.PhotoApi
+import com.example.flickrapp.data.FlickrApi
 import com.example.flickrapp.data.repository.PhotoRepositoryImpl
 import com.example.flickrapp.domain.repository.PhotoRepository
+import com.example.flickrapp.domain.usecase.GetPhotoInfoUseCase
+import com.example.flickrapp.domain.usecase.SearchPhotosUseCase
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -22,7 +24,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object AppModule {
     @Provides
     @Singleton
-    fun providePhotoApi(): PhotoApi =
+    fun providePhotoApi(): FlickrApi =
         Retrofit
             .Builder()
             .baseUrl(FLICKR_BASE_URL)
@@ -40,9 +42,17 @@ object AppModule {
                         level = HttpLoggingInterceptor.Level.BASIC
                     }).build(),
             ).build()
-            .create(PhotoApi::class.java)
+            .create(FlickrApi::class.java)
 
     @Provides
     @Singleton
-    fun providePhotoRepository(photoApi: PhotoApi): PhotoRepository = PhotoRepositoryImpl(photoApi)
+    fun providePhotoRepository(photoApi: FlickrApi): PhotoRepository = PhotoRepositoryImpl(photoApi)
+
+    @Provides
+    @Singleton
+    fun provideSearchPhotoUseCase(searchPhotosRepository : PhotoRepository) : SearchPhotosUseCase =  SearchPhotosUseCase(searchPhotosRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPhotoInfoUseCase(searchPhotosRepository : PhotoRepository) : GetPhotoInfoUseCase =  GetPhotoInfoUseCase(searchPhotosRepository)
 }
