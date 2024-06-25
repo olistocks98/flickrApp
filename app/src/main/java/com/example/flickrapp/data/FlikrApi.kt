@@ -1,11 +1,11 @@
 package com.example.flickrapp.data
 
-import android.os.Parcelable
 import com.example.flickrapp.constants.FLICKR_API_KEY
 import com.example.flickrapp.constants.FLICKR_FORMAT
 import com.example.flickrapp.constants.FLICKR_GET_PHOTO_INFO
 import com.example.flickrapp.constants.FLICKR_SEARCH_PHOTOS_METHOD
-import kotlinx.parcelize.Parcelize
+import com.example.flickrapp.data.responseData.PhotoInfoResponse
+import com.example.flickrapp.data.responseData.PhotosSearchResponse
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -42,61 +42,4 @@ interface FlickrApi {
     ): Call<PhotoInfoResponse>
 }
 
-data class PhotosSearchResponse(
-    val photos: PhotosMetaData = PhotosMetaData(page = -1, photo = listOf()),
-)
 
-data class PhotoInfoResponse(
-    val photo: PhotoInfo,
-)
-
-data class PhotoInfo(
-    val id: String,
-    val secret: String,
-    val farm: String,
-    val dateUploaded: String,
-    val owner: Owner,
-    val description: Description,
-    val tags : Tag
-)
-
-data class Description(
-    val _content: String = ""
-)
-
-@Parcelize
-data class Owner(
-    val nsid: String,
-    val username: String,
-    val realname: String,
-    val location: String,
-    val iconserver: String,
-    val iconfarm: String,
-) : Parcelable {
-    val url : String
-        get() =  "https://farm" + "${iconfarm}.staticflickr.com/${iconserver}/buddyicons/${nsid}.jpg"
-}
-
-
-data class Tag(
-    val tag: List<O>,
-)
-
-data class O(
-    val _content: String,
-)
-
-
-data class PhotosMetaData(
-    val page: Int,
-    val photo: List<PhotoResponse>,
-)
-
-data class PhotoResponse(
-    val id: String,
-    val owner: String,
-    val secret: String,
-    val server: String,
-    val farm: Int,
-    val title: String,
-)

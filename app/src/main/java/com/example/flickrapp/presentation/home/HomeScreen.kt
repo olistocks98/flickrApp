@@ -72,7 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.flickrapp.R
-import com.example.flickrapp.data.Owner
+import com.example.flickrapp.data.responseData.Owner
 import com.example.flickrapp.domain.model.Photo
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)

@@ -3,7 +3,7 @@ package com.sujibfr.app.presentation.home.viewModels
 import TagSearchMode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flickrapp.data.Owner
+import com.example.flickrapp.data.responseData.Owner
 import com.example.flickrapp.domain.model.Photo
 import com.example.flickrapp.domain.usecase.SearchPhotosUseCase
 import com.example.flickrapp.domain.usecase.SearchType

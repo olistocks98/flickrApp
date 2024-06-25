@@ -1,7 +1,7 @@
 package com.example.flickrapp.domain.repository
 
-import com.example.flickrapp.data.PhotoInfoResponse
-import com.example.flickrapp.data.PhotosSearchResponse
+import com.example.flickrapp.data.responseData.PhotoInfoResponse
+import com.example.flickrapp.data.responseData.PhotosSearchResponse
 
 interface PhotoRepository {
     suspend fun searchPhotosByText(searchText: String, tags: String, tagMode: String): PhotosSearchResponse

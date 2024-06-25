@@ -1,7 +1,7 @@
 package com.example.flickrapp.domain.model
 
-import com.example.flickrapp.data.O
-import com.example.flickrapp.data.Owner
+import com.example.flickrapp.data.responseData.Tag
+import com.example.flickrapp.data.responseData.Owner
 
 
 data class Photo(
@@ -11,5 +11,5 @@ data class Photo(
     val description: String = "",
     val dateUploaded: String = "",
     val owner: Owner? = null,
-    val tags: List<O> = listOf()
+    val tags: List<Tag> = listOf()
 )

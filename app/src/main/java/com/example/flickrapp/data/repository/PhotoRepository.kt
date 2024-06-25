@@ -1,8 +1,8 @@
 package com.example.flickrapp.data.repository
 
 import com.example.flickrapp.data.FlickrApi
-import com.example.flickrapp.data.PhotoInfoResponse
-import com.example.flickrapp.data.PhotosSearchResponse
+import com.example.flickrapp.data.responseData.PhotoInfoResponse
+import com.example.flickrapp.data.responseData.PhotosSearchResponse
 import com.example.flickrapp.domain.repository.PhotoRepository
 import retrofit2.await
 

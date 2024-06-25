@@ -1,9 +1,8 @@
 package com.example.flickrapp.presentation.home
 
 import TagSearchMode
-import com.example.flickrapp.data.Owner
+import com.example.flickrapp.data.responseData.Owner
 import com.example.flickrapp.domain.model.Photo
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 data class HomeState(
