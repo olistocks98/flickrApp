@@ -41,9 +41,11 @@ class MainActivity : ComponentActivity() {
             composable("screenHome", content = {
                 HomeScreen(
                     viewModel.state,
-                    updateSearch = {text->  viewModel.updateSearchText(text) },
+                    updateSearch = { text -> viewModel.updateSearchText(text) },
                     search = { viewModel.search() },
-                    updateSearchByUser = {nsid -> viewModel.updateSearchUser(nsid) }
+                    updateSearchByUser = { nsid -> viewModel.updateSearchUser(nsid) },
+                    appendTag = { tag -> viewModel.appendTag(tag) },
+                    setTagSearchMode = { tagSearchMode -> viewModel.setTagSearchMode(tagSearchMode) },
                 )
             })
         }

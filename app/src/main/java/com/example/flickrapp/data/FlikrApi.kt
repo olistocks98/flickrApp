@@ -18,7 +18,10 @@ interface FlickrApi {
         @Query("nojsoncallback") noJsonCallback: Int = 1,
         @Query("text") text: String,
         @Query("api_key") apiKey: String = FLICKR_API_KEY,
-        @Query("per_page") perPage: Int = 10
+        @Query("per_page") perPage: Int = 10,
+        @Query("safe_search") safeSearch: Int = 1,
+        @Query("tags") tags: String,
+        @Query("tag_mode") tagMode: String = "any",
     ): Call<PhotosSearchResponse>
     @GET("rest")
     fun searchPhotosByUser(

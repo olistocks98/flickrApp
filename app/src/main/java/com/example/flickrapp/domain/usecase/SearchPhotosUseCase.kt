@@ -1,7 +1,9 @@
 package com.example.flickrapp.domain.usecase
 
+import TagSearchMode
 import com.example.flickrapp.domain.model.Photo
 import com.example.flickrapp.domain.repository.PhotoRepository
+import com.example.flickrapp.helpers.toCommaSeperatedString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -16,11 +18,18 @@ class SearchPhotosUseCase(
     fun invoke(
         search: String,
         searchType: SearchType,
+        tags: List<String> = listOf(),
+        tagMode: TagSearchMode,
     ): Flow<List<Photo>> =
         flow {
             val photosApiResponse =
                 when (searchType) {
-                    SearchType.TEXT -> photoRepository.searchPhotosByText(search)
+                    SearchType.TEXT ->
+                        photoRepository.searchPhotosByText(
+                            search,
+                            tags.toCommaSeperatedString(),
+                            tagMode = tagMode.apiParam
+                        )
                     SearchType.USER -> photoRepository.searchPhotosByUser(search)
                 }
             var photoList =
@@ -42,7 +51,7 @@ class SearchPhotosUseCase(
                                 updatingPhoto.copy(
                                     owner = photoInfo.photo.owner,
                                     description = photoInfo.photo.description._content,
-                                    tags = photoInfo.photo.tags.tag
+                                    tags = photoInfo.photo.tags.tag,
                                 )
                             } else {
                                 updatingPhoto

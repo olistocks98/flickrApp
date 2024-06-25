@@ -1,5 +1,6 @@
 package com.example.flickrapp.presentation.home
 
+import TagSearchMode
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -28,8 +29,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,10 +81,15 @@ fun HomeScreen(
     updateSearch: (String) -> Unit,
     updateSearchByUser: (Owner?) -> Unit,
     search: () -> Unit,
+    appendTag: (String) -> Unit,
+    setTagSearchMode: (TagSearchMode) -> Unit,
 ) {
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    var dropdownExpanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchUser = state.searchUser.collectAsState()
+    val tagSearchMode = state.tagSearchMode.collectAsState()
     val searchText = state.searchText.collectAsState()
     val photos = state.searchedPhotos.collectAsState()
     val userPhotos = state.userPhotos.collectAsState()
@@ -150,6 +161,58 @@ fun HomeScreen(
                                     Icons.Default.Search,
                                     contentDescription = null,
                                 )
+                            },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    dropdownExpanded = dropdownExpanded.not()
+                                }) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        contentDescription = null,
+                                    )
+                                }
+                                DropdownMenu(expanded = dropdownExpanded, onDismissRequest = {
+                                    dropdownExpanded = false
+                                }) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(32.dp),
+                                                modifier = Modifier.fillMaxWidth(),
+                                            ) {
+                                                Text("Contains all tags")
+                                                if (tagSearchMode.value == TagSearchMode.ALL_TAGS) {
+                                                    Icon(Icons.Default.Check, "check")
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            setTagSearchMode(TagSearchMode.ALL_TAGS)
+                                            dropdownExpanded = false
+                                            search()
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(32.dp),
+                                                modifier = Modifier.fillMaxWidth(),
+                                            ) {
+                                                Text("Contains some tags")
+                                                if (tagSearchMode.value == TagSearchMode.SOME_TAGS) {
+                                                    Icon(Icons.Default.Check, "check")
+                                                }
+                                            }
+                                        },
+                                        onClick = {
+                                            setTagSearchMode(TagSearchMode.SOME_TAGS)
+                                            dropdownExpanded = false
+                                            search()
+                                        },
+                                    )
+                                }
                             },
                             modifier =
                                 Modifier.clickable {
@@ -245,7 +308,7 @@ fun HomeScreen(
                                                             it.owner
                                                                 ?.username
                                                                 .orEmpty(),
-                                                        color = MaterialTheme.colorScheme.primary,
+                                                        color = Color.White,
                                                         fontSize = 12.sp,
                                                         fontWeight = FontWeight.Bold,
                                                     )
@@ -292,9 +355,9 @@ fun HomeScreen(
                                             Card(
                                                 modifier =
                                                     Modifier
+                                                        .widthIn(max = 600.dp)
                                                         .fillMaxWidth()
                                                         .align(Alignment.Center)
-                                                        .widthIn(max = 300.dp)
                                                         .padding(16.dp),
                                             ) {
                                                 Column(
@@ -321,7 +384,11 @@ fun HomeScreen(
                                                             item {
                                                                 SuggestionChip(
                                                                     label = { Text(it._content) },
-                                                                    onClick = {},
+                                                                    onClick = {
+                                                                        updateSearch("#${it._content}")
+                                                                        search()
+                                                                        navigator.navigateBack()
+                                                                    },
                                                                 )
                                                             }
                                                         }

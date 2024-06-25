@@ -1,14 +1,18 @@
 package com.sujibfr.app.presentation.home.viewModels
 
+import TagSearchMode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flickrapp.data.Owner
 import com.example.flickrapp.domain.model.Photo
 import com.example.flickrapp.domain.usecase.SearchPhotosUseCase
 import com.example.flickrapp.domain.usecase.SearchType
+import com.example.flickrapp.helpers.removeTags
+import com.example.flickrapp.helpers.toTagList
 import com.example.flickrapp.presentation.home.HomeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -35,6 +39,11 @@ class HomeViewModel
         private val _userPhotos: MutableStateFlow<List<Photo>> =
             MutableStateFlow(listOf())
 
+        private val _tagSearchMode: MutableStateFlow<TagSearchMode> =
+            MutableStateFlow(TagSearchMode.SOME_TAGS)
+
+        private var searchJob: Job? = null
+
         val state: HomeState =
             HomeState(
                 searchText = _searchText,
@@ -42,25 +51,41 @@ class HomeViewModel
                 searchSuggestions = _searchSuggestions,
                 searchedPhotos = _searchPhotos,
                 userPhotos = _userPhotos,
+                tagSearchMode = _tagSearchMode,
             )
 
         init {
             searchPhotosByText()
         }
 
+        fun setTagSearchMode(tagSearchMode: TagSearchMode) {
+            _tagSearchMode.value = tagSearchMode
+        }
+
         private fun searchPhotosByText() {
-            searchPhotosUseCase
-                .invoke(searchType = SearchType.TEXT, search = _searchText.value)
-                .onEach {
-                    _searchPhotos.value = it
-                }.launchIn(viewModelScope)
+            val tags = _searchText.value.toTagList()
+            val searchText = _searchText.value.removeTags()
+            searchJob?.cancel()
+            searchJob =
+                searchPhotosUseCase
+                    .invoke(
+                        searchType = SearchType.TEXT,
+                        search = searchText,
+                        tags = tags,
+                        tagMode = _tagSearchMode.value,
+                    ).onEach {
+                        _searchPhotos.value = it
+                    }.launchIn(viewModelScope)
         }
 
         private fun searchPhotosByUser() {
             _searchUser.value?.nsid?.let { nsid ->
                 searchPhotosUseCase
-                    .invoke(searchType = SearchType.USER, search = nsid)
-                    .onEach { result ->
+                    .invoke(
+                        search = nsid,
+                        searchType = SearchType.USER,
+                        tagMode = _tagSearchMode.value,
+                    ).onEach { result ->
                         _userPhotos.value = result
                     }.launchIn(viewModelScope)
             }
@@ -68,6 +93,10 @@ class HomeViewModel
 
         fun updateSearchText(newSearchText: String) {
             _searchText.value = newSearchText
+        }
+
+        fun appendTag(tag: String) {
+            _searchText.value += " #$tag"
         }
 
         fun updateSearchUser(searchedUser: Owner?) {
