@@ -54,7 +54,6 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -85,7 +84,7 @@ fun HomeScreen(
     search: () -> Unit,
     setTagSearchMode: (TagSearchMode) -> Unit,
 ) {
-    val expanded by remember { mutableStateOf(false) }
+
     val dropdownExpanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchUser = state.searchUser.collectAsState()
@@ -94,6 +93,7 @@ fun HomeScreen(
     val photos = state.searchedPhotos.collectAsState()
     val userPhotos = state.userPhotos.collectAsState()
     val navigator = rememberListDetailPaneScaffoldNavigator<Photo>()
+    var expanded by remember { mutableStateOf(false) }
 
     BackHandler(navigator.canNavigateBack()) {
         navigator.navigateBack()
@@ -136,19 +136,6 @@ fun HomeScreen(
         },
         content = { contentPadding ->
             Box(Modifier.padding(contentPadding).fillMaxSize()) {
-                Box(Modifier.align(Alignment.Center))
-                PhotosSearch(
-                    searchPadding,
-                    expanded,
-                    searchText,
-                    updateSearch,
-                    search,
-                    dropdownExpanded,
-                    tagSearchMode,
-                    setTagSearchMode,
-                    searchSuggestions,
-                )
-
                 navigator.canNavigateBack()
                 ListDetailPaneScaffold(
                     directive = navigator.scaffoldDirective,
@@ -198,6 +185,20 @@ fun HomeScreen(
                         }
                     },
                 )
+                Box(Modifier.align(Alignment.TopCenter)){
+                    PhotosSearch(
+                        searchPadding = searchPadding.value,
+                        expanded = expanded,
+                        setExpanded = {setExpanded -> expanded = setExpanded},
+                        searchText = searchText.value,
+                        updateSearch = {updateSearch(it)},
+                        search = {search()},
+                        dropdownExpanded = dropdownExpanded,
+                        tagSearchMode = tagSearchMode.value,
+                        setTagSearchMode = {setTagSearchMode(it)},
+                        searchSuggestions = searchSuggestions.value,
+                    )
+                }
             }
         },
     )
@@ -206,34 +207,34 @@ fun HomeScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun PhotosSearch(
-    searchPadding: State<Dp>,
-    expanded: Boolean,
-    searchText: State<String>,
+    searchPadding: Dp,
+    searchText: String,
     updateSearch: (String) -> Unit,
     search: () -> Unit,
     dropdownExpanded: Boolean,
-    tagSearchMode: State<TagSearchMode>,
+    tagSearchMode: TagSearchMode,
     setTagSearchMode: (TagSearchMode) -> Unit,
-    searchSuggestions: State<List<String>>,
+    searchSuggestions: List<String>,
+    expanded : Boolean,
+    setExpanded : (Boolean) -> Unit
 ) {
-    var expanded1 = expanded
     var dropdownExpanded1 = dropdownExpanded
     SearchBar(
         modifier =
             Modifier
-                .padding(horizontal = searchPadding.value)
-                .clickable { expanded1 = true },
+                .padding(horizontal = searchPadding)
+                .clickable { setExpanded(true)},
         inputField = {
             SearchBarDefaults.InputField(
-                query = searchText.value,
+                query = searchText,
                 onQueryChange = { updateSearch(it) },
                 onSearch = {
                     search()
-                    expanded1 = false
+                    setExpanded(false)
                 },
-                expanded = expanded1,
+                expanded = expanded,
                 onExpandedChange = {
-                    expanded1 = it
+                    setExpanded(it)
                 },
                 placeholder = { Text("Search Photos") },
                 leadingIcon = {
@@ -262,7 +263,7 @@ private fun PhotosSearch(
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
                                     Text("Contains all tags")
-                                    if (tagSearchMode.value == TagSearchMode.ALL_TAGS) {
+                                    if (tagSearchMode == TagSearchMode.ALL_TAGS) {
                                         Icon(Icons.Default.Check, "check")
                                     }
                                 }
@@ -281,7 +282,7 @@ private fun PhotosSearch(
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
                                     Text("Contains some tags")
-                                    if (tagSearchMode.value == TagSearchMode.SOME_TAGS) {
+                                    if (tagSearchMode == TagSearchMode.SOME_TAGS) {
                                         Icon(Icons.Default.Check, "check")
                                     }
                                 }
@@ -296,15 +297,15 @@ private fun PhotosSearch(
                 },
                 modifier =
                     Modifier.clickable {
-                        if (expanded1.not()) expanded1 = true
+                        if (expanded.not()) setExpanded(true)
                     },
             )
         },
-        expanded = expanded1,
+        expanded = expanded,
         onExpandedChange = { },
     ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
-            searchSuggestions.value.forEach { suggestion ->
+            searchSuggestions.forEach { suggestion ->
                 ListItem(
                     headlineContent = { Text(suggestion) },
                     leadingContent = {
@@ -319,7 +320,7 @@ private fun PhotosSearch(
                             .clickable {
                                 updateSearch(suggestion)
                                 search()
-                                expanded1 = false
+                                setExpanded(false)
                             }.fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
