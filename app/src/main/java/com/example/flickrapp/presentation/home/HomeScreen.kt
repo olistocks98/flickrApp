@@ -85,7 +85,7 @@ fun HomeScreen(
     setTagSearchMode: (TagSearchMode) -> Unit,
 ) {
 
-    val dropdownExpanded by remember { mutableStateOf(false) }
+    var dropdownExpanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchUser = state.searchUser.collectAsState()
     val tagSearchMode = state.tagSearchMode.collectAsState()
@@ -197,6 +197,7 @@ fun HomeScreen(
                         tagSearchMode = tagSearchMode.value,
                         setTagSearchMode = {setTagSearchMode(it)},
                         searchSuggestions = searchSuggestions.value,
+                        setDropdownExpanded = {dropdownExpanded = it}
                     )
                 }
             }
@@ -216,9 +217,9 @@ private fun PhotosSearch(
     setTagSearchMode: (TagSearchMode) -> Unit,
     searchSuggestions: List<String>,
     expanded : Boolean,
-    setExpanded : (Boolean) -> Unit
+    setExpanded : (Boolean) -> Unit,
+    setDropdownExpanded : (Boolean) -> Unit
 ) {
-    var dropdownExpanded1 = dropdownExpanded
     SearchBar(
         modifier =
             Modifier
@@ -245,15 +246,15 @@ private fun PhotosSearch(
                 },
                 trailingIcon = {
                     IconButton(onClick = {
-                        dropdownExpanded1 = dropdownExpanded1.not()
+                        setDropdownExpanded( dropdownExpanded.not())
                     }) {
                         Icon(
                             Icons.Default.MoreVert,
                             contentDescription = null,
                         )
                     }
-                    DropdownMenu(expanded = dropdownExpanded1, onDismissRequest = {
-                        dropdownExpanded1 = false
+                    DropdownMenu(expanded = dropdownExpanded, onDismissRequest = {
+                        setDropdownExpanded(false)
                     }) {
                         DropdownMenuItem(
                             text = {
@@ -270,7 +271,7 @@ private fun PhotosSearch(
                             },
                             onClick = {
                                 setTagSearchMode(TagSearchMode.ALL_TAGS)
-                                dropdownExpanded1 = false
+                                setDropdownExpanded(false)
                                 search()
                             },
                         )
@@ -289,7 +290,7 @@ private fun PhotosSearch(
                             },
                             onClick = {
                                 setTagSearchMode(TagSearchMode.SOME_TAGS)
-                                dropdownExpanded1 = false
+                                setDropdownExpanded(false)
                                 search()
                             },
                         )
