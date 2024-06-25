@@ -51,8 +51,10 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -64,9 +66,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -81,19 +83,16 @@ fun HomeScreen(
     updateSearch: (String) -> Unit,
     updateSearchByUser: (Owner?) -> Unit,
     search: () -> Unit,
-    appendTag: (String) -> Unit,
     setTagSearchMode: (TagSearchMode) -> Unit,
 ) {
-    val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
-    var dropdownExpanded by remember { mutableStateOf(false) }
+    val expanded by remember { mutableStateOf(false) }
+    val dropdownExpanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchUser = state.searchUser.collectAsState()
     val tagSearchMode = state.tagSearchMode.collectAsState()
     val searchText = state.searchText.collectAsState()
     val photos = state.searchedPhotos.collectAsState()
     val userPhotos = state.userPhotos.collectAsState()
-
     val navigator = rememberListDetailPaneScaffoldNavigator<Photo>()
 
     BackHandler(navigator.canNavigateBack()) {
@@ -135,117 +134,20 @@ fun HomeScreen(
                 )
             }
         },
-        content = { padding ->
-            Box(Modifier.fillMaxSize()) {
-                SearchBar(
-                    modifier =
-                        Modifier
-                            .padding(horizontal = searchPadding.value)
-                            .clickable { expanded = true }
-                            .align(Alignment.TopCenter),
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = searchText.value,
-                            onQueryChange = { updateSearch(it) },
-                            onSearch = {
-                                search()
-                                expanded = false
-                            },
-                            expanded = expanded,
-                            onExpandedChange = {
-                                expanded = it
-                            },
-                            placeholder = { Text("Search Photos") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Search,
-                                    contentDescription = null,
-                                )
-                            },
-                            trailingIcon = {
-                                IconButton(onClick = {
-                                    dropdownExpanded = dropdownExpanded.not()
-                                }) {
-                                    Icon(
-                                        Icons.Default.MoreVert,
-                                        contentDescription = null,
-                                    )
-                                }
-                                DropdownMenu(expanded = dropdownExpanded, onDismissRequest = {
-                                    dropdownExpanded = false
-                                }) {
-                                    DropdownMenuItem(
-                                        text = {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                                                modifier = Modifier.fillMaxWidth(),
-                                            ) {
-                                                Text("Contains all tags")
-                                                if (tagSearchMode.value == TagSearchMode.ALL_TAGS) {
-                                                    Icon(Icons.Default.Check, "check")
-                                                }
-                                            }
-                                        },
-                                        onClick = {
-                                            setTagSearchMode(TagSearchMode.ALL_TAGS)
-                                            dropdownExpanded = false
-                                            search()
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                                                modifier = Modifier.fillMaxWidth(),
-                                            ) {
-                                                Text("Contains some tags")
-                                                if (tagSearchMode.value == TagSearchMode.SOME_TAGS) {
-                                                    Icon(Icons.Default.Check, "check")
-                                                }
-                                            }
-                                        },
-                                        onClick = {
-                                            setTagSearchMode(TagSearchMode.SOME_TAGS)
-                                            dropdownExpanded = false
-                                            search()
-                                        },
-                                    )
-                                }
-                            },
-                            modifier =
-                                Modifier.clickable {
-                                    if (expanded.not()) expanded = true
-                                },
-                        )
-                    },
-                    expanded = expanded,
-                    onExpandedChange = { },
-                ) {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
-                        searchSuggestions.value.forEach { suggestion ->
-                            ListItem(
-                                headlineContent = { Text(suggestion) },
-                                leadingContent = {
-                                    Icon(
-                                        Icons.Filled.Search,
-                                        contentDescription = null,
-                                    )
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier =
-                                    Modifier
-                                        .clickable {
-                                            updateSearch(suggestion)
-                                            search()
-                                            expanded = false
-                                        }.fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                            )
-                        }
-                    }
-                }
+        content = { contentPadding ->
+            Box(Modifier.padding(contentPadding).fillMaxSize()) {
+                Box(Modifier.align(Alignment.Center))
+                PhotosSearch(
+                    searchPadding,
+                    expanded,
+                    searchText,
+                    updateSearch,
+                    search,
+                    dropdownExpanded,
+                    tagSearchMode,
+                    setTagSearchMode,
+                    searchSuggestions,
+                )
 
                 navigator.canNavigateBack()
                 ListDetailPaneScaffold(
@@ -256,66 +158,8 @@ fun HomeScreen(
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(0.dp),
                             ) {
-                                items(displayedPhotos) {
-                                    Box(Modifier.fillMaxWidth()) {
-                                        AsyncImage(
-                                            model = it.url,
-                                            contentDescription = null,
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .clickable {
-                                                        navigator.navigateTo(
-                                                            ListDetailPaneScaffoldRole.Detail,
-                                                            it,
-                                                        )
-                                                    },
-                                            contentScale = ContentScale.Crop,
-                                        )
-                                        Box(
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .height(65.dp)
-                                                .background(Color.Black.copy(alpha = 0.6F))
-                                                .align(Alignment.BottomCenter),
-                                        ) {
-                                            Row(
-                                                modifier =
-                                                    Modifier
-                                                        .align(Alignment.Center)
-                                                        .fillMaxWidth()
-                                                        .padding(4.dp),
-                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                            ) {
-                                                AsyncImage(
-                                                    model = it.owner?.url,
-                                                    contentDescription = it.owner?.realname,
-                                                    modifier =
-                                                        Modifier
-                                                            .clickable {
-                                                                updateSearchByUser(
-                                                                    it.owner,
-                                                                )
-                                                            }.size(40.dp)
-                                                            .clip(CircleShape),
-                                                    contentScale = ContentScale.FillBounds,
-                                                    placeholder = painterResource(R.drawable.ic_avatar),
-                                                )
-                                                Column {
-                                                    Text(
-                                                        text =
-                                                            it.owner
-                                                                ?.username
-                                                                .orEmpty(),
-                                                        color = Color.White,
-                                                        fontSize = 12.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+                                items(displayedPhotos) { photo ->
+                                    ListedPhoto(photo, navigator, updateSearchByUser)
                                 }
                             }
                         }
@@ -347,56 +191,7 @@ fun HomeScreen(
                                         enter = fadeIn(),
                                         exit = fadeOut(),
                                     ) {
-                                        Box(
-                                            Modifier
-                                                .fillMaxSize()
-                                                .background(Color.Black.copy(alpha = 0.5F)),
-                                        ) {
-                                            Card(
-                                                modifier =
-                                                    Modifier
-                                                        .widthIn(max = 600.dp)
-                                                        .fillMaxWidth()
-                                                        .align(Alignment.Center)
-                                                        .padding(16.dp),
-                                            ) {
-                                                Column(
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                                ) {
-                                                    Column(Modifier.padding(16.dp)) {
-                                                        Text(
-                                                            details.title,
-                                                            style = MaterialTheme.typography.titleMedium,
-                                                        )
-                                                        Text(
-                                                            details.description,
-                                                            style = MaterialTheme.typography.bodySmall,
-                                                        )
-                                                    }
-                                                    LazyRow(
-                                                        horizontalArrangement =
-                                                            Arrangement.spacedBy(
-                                                                10.dp,
-                                                            ),
-                                                    ) {
-                                                        item { Spacer(Modifier.width(4.dp)) }
-                                                        details.tags.forEach {
-                                                            item {
-                                                                SuggestionChip(
-                                                                    label = { Text(it._content) },
-                                                                    onClick = {
-                                                                        updateSearch("#${it._content}")
-                                                                        search()
-                                                                        navigator.navigateBack()
-                                                                    },
-                                                                )
-                                                            }
-                                                        }
-                                                        item { Spacer(Modifier.width(4.dp)) }
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        PhotoDetails(details, updateSearch, search, navigator)
                                     }
                                 }
                             }
@@ -406,4 +201,257 @@ fun HomeScreen(
             }
         },
     )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun PhotosSearch(
+    searchPadding: State<Dp>,
+    expanded: Boolean,
+    searchText: State<String>,
+    updateSearch: (String) -> Unit,
+    search: () -> Unit,
+    dropdownExpanded: Boolean,
+    tagSearchMode: State<TagSearchMode>,
+    setTagSearchMode: (TagSearchMode) -> Unit,
+    searchSuggestions: State<List<String>>,
+) {
+    var expanded1 = expanded
+    var dropdownExpanded1 = dropdownExpanded
+    SearchBar(
+        modifier =
+            Modifier
+                .padding(horizontal = searchPadding.value)
+                .clickable { expanded1 = true },
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = searchText.value,
+                onQueryChange = { updateSearch(it) },
+                onSearch = {
+                    search()
+                    expanded1 = false
+                },
+                expanded = expanded1,
+                onExpandedChange = {
+                    expanded1 = it
+                },
+                placeholder = { Text("Search Photos") },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        dropdownExpanded1 = dropdownExpanded1.not()
+                    }) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = null,
+                        )
+                    }
+                    DropdownMenu(expanded = dropdownExpanded1, onDismissRequest = {
+                        dropdownExpanded1 = false
+                    }) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text("Contains all tags")
+                                    if (tagSearchMode.value == TagSearchMode.ALL_TAGS) {
+                                        Icon(Icons.Default.Check, "check")
+                                    }
+                                }
+                            },
+                            onClick = {
+                                setTagSearchMode(TagSearchMode.ALL_TAGS)
+                                dropdownExpanded1 = false
+                                search()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(32.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text("Contains some tags")
+                                    if (tagSearchMode.value == TagSearchMode.SOME_TAGS) {
+                                        Icon(Icons.Default.Check, "check")
+                                    }
+                                }
+                            },
+                            onClick = {
+                                setTagSearchMode(TagSearchMode.SOME_TAGS)
+                                dropdownExpanded1 = false
+                                search()
+                            },
+                        )
+                    }
+                },
+                modifier =
+                    Modifier.clickable {
+                        if (expanded1.not()) expanded1 = true
+                    },
+            )
+        },
+        expanded = expanded1,
+        onExpandedChange = { },
+    ) {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            searchSuggestions.value.forEach { suggestion ->
+                ListItem(
+                    headlineContent = { Text(suggestion) },
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = null,
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    modifier =
+                        Modifier
+                            .clickable {
+                                updateSearch(suggestion)
+                                search()
+                                expanded1 = false
+                            }.fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun PhotoDetails(
+    details: Photo,
+    updateSearch: (String) -> Unit,
+    search: () -> Unit,
+    navigator: ThreePaneScaffoldNavigator<Photo>,
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5F)),
+    ) {
+        Card(
+            modifier =
+                Modifier
+                    .widthIn(max = 600.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+                    .padding(16.dp),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        details.title,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        details.description,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                LazyRow(
+                    horizontalArrangement =
+                        Arrangement.spacedBy(
+                            10.dp,
+                        ),
+                ) {
+                    item { Spacer(Modifier.width(4.dp)) }
+                    details.tags.forEach {
+                        item {
+                            SuggestionChip(
+                                label = { Text(it._content) },
+                                onClick = {
+                                    updateSearch("#${it._content}")
+                                    search()
+                                    navigator.navigateBack()
+                                },
+                            )
+                        }
+                    }
+                    item { Spacer(Modifier.width(4.dp)) }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun ListedPhoto(
+    it: Photo,
+    navigator: ThreePaneScaffoldNavigator<Photo>,
+    updateSearchByUser: (Owner?) -> Unit,
+) {
+    Box(Modifier.fillMaxWidth()) {
+        AsyncImage(
+            model = it.url,
+            contentDescription = null,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navigator.navigateTo(
+                            ListDetailPaneScaffoldRole.Detail,
+                            it,
+                        )
+                    },
+            contentScale = ContentScale.Crop,
+        )
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(65.dp)
+                .background(Color.Black.copy(alpha = 0.6F))
+                .align(Alignment.BottomCenter),
+        ) {
+            Row(
+                modifier =
+                    Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AsyncImage(
+                    model = it.owner?.url,
+                    contentDescription = it.owner?.realname,
+                    modifier =
+                        Modifier
+                            .clickable {
+                                updateSearchByUser(
+                                    it.owner,
+                                )
+                            }.size(40.dp)
+                            .clip(CircleShape),
+                    contentScale = ContentScale.FillBounds,
+                    placeholder = painterResource(R.drawable.ic_avatar),
+                )
+                Column {
+                    Text(
+                        text =
+                            it.owner
+                                ?.username
+                                .orEmpty(),
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+    }
 }

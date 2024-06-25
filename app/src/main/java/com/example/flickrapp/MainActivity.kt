@@ -42,9 +42,8 @@ class MainActivity : ComponentActivity() {
                 HomeScreen(
                     viewModel.state,
                     updateSearch = { text -> viewModel.updateSearchText(text) },
-                    search = { viewModel.search() },
                     updateSearchByUser = { nsid -> viewModel.updateSearchUser(nsid) },
-                    appendTag = { tag -> viewModel.appendTag(tag) },
+                    search = { viewModel.search() },
                     setTagSearchMode = { tagSearchMode -> viewModel.setTagSearchMode(tagSearchMode) },
                 )
             })
