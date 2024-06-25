@@ -84,7 +84,6 @@ fun HomeScreen(
     search: () -> Unit,
     setTagSearchMode: (TagSearchMode) -> Unit,
 ) {
-
     var dropdownExpanded by remember { mutableStateOf(false) }
     val searchSuggestions = state.searchSuggestions.collectAsState()
     val searchUser = state.searchUser.collectAsState()
@@ -120,14 +119,14 @@ fun HomeScreen(
             if (searchUser.value != null || navigator.canNavigateBack()) {
                 BackHandler {
                     updateSearchByUser(null)
-                    ListDetailPaneScaffoldRole.List
+                    navigator.navigateTo(ListDetailPaneScaffoldRole.List)
                 }
                 TopAppBar(
                     title = { Text(searchUser.value?.username ?: "") },
                     navigationIcon = {
                         IconButton(onClick = {
                             updateSearchByUser(null)
-                            ListDetailPaneScaffoldRole.List
+                            navigator.navigateTo(ListDetailPaneScaffoldRole.List)
                         }) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, "back")
                         }
@@ -185,24 +184,23 @@ fun HomeScreen(
                         }
                     },
                 )
-                if (searchUser.value == null && navigator.canNavigateBack().not()){
-                    Box(Modifier.align(Alignment.TopCenter)){
+                if (searchUser.value == null && navigator.canNavigateBack().not()) {
+                    Box(Modifier.align(Alignment.TopCenter)) {
                         PhotosSearch(
                             searchPadding = searchPadding.value,
                             expanded = expanded,
-                            setExpanded = {setExpanded -> expanded = setExpanded},
+                            setExpanded = { setExpanded -> expanded = setExpanded },
                             searchText = searchText.value,
-                            updateSearch = {updateSearch(it)},
-                            search = {search()},
+                            updateSearch = { updateSearch(it) },
+                            search = { search() },
                             dropdownExpanded = dropdownExpanded,
                             tagSearchMode = tagSearchMode.value,
-                            setTagSearchMode = {setTagSearchMode(it)},
+                            setTagSearchMode = { setTagSearchMode(it) },
                             searchSuggestions = searchSuggestions.value,
-                            setDropdownExpanded = {dropdownExpanded = it}
+                            setDropdownExpanded = { dropdownExpanded = it },
                         )
                     }
                 }
-
             }
         },
     )
@@ -219,15 +217,15 @@ private fun PhotosSearch(
     tagSearchMode: TagSearchMode,
     setTagSearchMode: (TagSearchMode) -> Unit,
     searchSuggestions: List<String>,
-    expanded : Boolean,
-    setExpanded : (Boolean) -> Unit,
-    setDropdownExpanded : (Boolean) -> Unit
+    expanded: Boolean,
+    setExpanded: (Boolean) -> Unit,
+    setDropdownExpanded: (Boolean) -> Unit,
 ) {
     SearchBar(
         modifier =
             Modifier
                 .padding(horizontal = searchPadding)
-                .clickable { setExpanded(true)},
+                .clickable { setExpanded(true) },
         inputField = {
             SearchBarDefaults.InputField(
                 query = searchText,
@@ -249,7 +247,7 @@ private fun PhotosSearch(
                 },
                 trailingIcon = {
                     IconButton(onClick = {
-                        setDropdownExpanded( dropdownExpanded.not())
+                        setDropdownExpanded(dropdownExpanded.not())
                     }) {
                         Icon(
                             Icons.Default.MoreVert,
