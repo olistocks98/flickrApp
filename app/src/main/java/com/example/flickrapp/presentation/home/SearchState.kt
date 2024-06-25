@@ -5,7 +5,7 @@ import com.example.flickrapp.data.responseData.Owner
 import com.example.flickrapp.domain.model.Photo
 import kotlinx.coroutines.flow.StateFlow
 
-data class HomeState(
+data class SearchState(
     val searchText: StateFlow<String>,
     val searchSuggestions: StateFlow<List<String>>,
     val searchedPhotos: StateFlow<List<Photo>>,

@@ -78,7 +78,7 @@ import com.example.flickrapp.domain.model.Photo
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun HomeScreen(
-    state: HomeState,
+    state: SearchState,
     updateSearch: (String) -> Unit,
     updateSearchByUser: (Owner?) -> Unit,
     search: () -> Unit,

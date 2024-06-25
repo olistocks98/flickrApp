@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.flickrapp.presentation.home.HomeScreen
 import com.example.flickrapp.ui.theme.FlickrAppTheme
-import com.sujibfr.app.presentation.home.viewModels.HomeViewModel
+import com.sujibfr.app.presentation.home.viewModels.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModelHome = hiltViewModel<HomeViewModel>()
+            val viewModelHome = hiltViewModel<SearchViewModel>()
             FlickrAppTheme {
                 val navController = rememberNavController()
                 Navigation(navController, viewModelHome)
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Navigation(
         navController: NavHostController,
-        viewModel: HomeViewModel,
+        viewModel: SearchViewModel,
     ) {
         NavHost(
             navController = navController,

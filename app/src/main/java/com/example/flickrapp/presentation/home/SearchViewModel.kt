@@ -6,10 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.flickrapp.data.responseData.Owner
 import com.example.flickrapp.domain.model.Photo
 import com.example.flickrapp.domain.usecase.SearchPhotosUseCase
-import com.example.flickrapp.domain.usecase.SearchType
 import com.example.flickrapp.helpers.removeTags
 import com.example.flickrapp.helpers.toTagList
-import com.example.flickrapp.presentation.home.HomeState
+import com.example.flickrapp.presentation.home.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -19,7 +18,7 @@ import kotlinx.coroutines.flow.onEach
 
 @Suppress("ktlint:standard:backing-property-naming")
 @HiltViewModel
-class HomeViewModel
+class SearchViewModel
     @Inject
     constructor(
         private val searchPhotosUseCase: SearchPhotosUseCase,
@@ -44,8 +43,8 @@ class HomeViewModel
 
         private var searchJob: Job? = null
 
-        val state: HomeState =
-            HomeState(
+        val state: SearchState =
+            SearchState(
                 searchText = _searchText,
                 searchUser = _searchUser,
                 searchSuggestions = _searchSuggestions,

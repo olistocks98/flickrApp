@@ -1,16 +1,12 @@
 package com.example.flickrapp.domain.usecase
 
+import SearchType
 import TagSearchMode
 import com.example.flickrapp.domain.model.Photo
 import com.example.flickrapp.domain.repository.PhotoRepository
 import com.example.flickrapp.helpers.toCommaSeperatedString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-
-enum class SearchType {
-    TEXT,
-    USER,
-}
 
 class SearchPhotosUseCase(
     private val photoRepository: PhotoRepository,
