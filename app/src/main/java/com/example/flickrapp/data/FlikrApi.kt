@@ -1,9 +1,11 @@
 package com.example.flickrapp.data
 
+import android.os.Parcelable
 import com.example.flickrapp.constants.FLICKR_API_KEY
 import com.example.flickrapp.constants.FLICKR_FORMAT
 import com.example.flickrapp.constants.FLICKR_GET_PHOTO_INFO
 import com.example.flickrapp.constants.FLICKR_SEARCH_PHOTOS_METHOD
+import kotlinx.parcelize.Parcelize
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -54,6 +56,7 @@ data class PhotoInfo(
     val tags: Tags,
 )
 
+@Parcelize
 data class Owner(
     val nsid: String,
     val username: String,
@@ -61,7 +64,7 @@ data class Owner(
     val location: String,
     val iconserver: String,
     val iconfarm: String,
-){
+) : Parcelable {
     val url : String
         get() =  "https://farm" + "${iconfarm}.staticflickr.com/${iconserver}/buddyicons/${nsid}.jpg"
 }

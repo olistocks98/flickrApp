@@ -33,6 +33,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -53,7 +54,7 @@ import coil.compose.AsyncImage
 import com.example.flickrapp.R
 import com.example.flickrapp.data.Owner
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun HomeScreen(
     state: HomeState,
@@ -67,6 +68,12 @@ fun HomeScreen(
     val searchText = state.searchText.collectAsState()
     val photos = state.searchedPhotos.collectAsState()
     val userPhotos = state.userPhotos.collectAsState()
+
+    // val navigator = rememberListDetailPaneScaffoldNavigator<MyItem>()
+
+//    BackHandler(navigator.canNavigateBack()) {
+//        navigator.navigateBack()
+//    }
 
     val displayedPhotos by remember {
         derivedStateOf {
@@ -165,59 +172,54 @@ fun HomeScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    items(displayedPhotos.entries.toList()) {
-                        if (it.value?.owner != null) {
-                            Box(Modifier.fillMaxWidth()) {
-                                AsyncImage(
-                                    model = it.key.url,
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentScale = ContentScale.Crop,
-                                )
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(65.dp)
-                                        .background(Color.Black.copy(alpha = 0.6F))
-                                        .align(Alignment.BottomCenter),
+                    items(displayedPhotos) {
+                        Box(Modifier.fillMaxWidth()) {
+                            AsyncImage(
+                                model = it.url,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxWidth(),
+                                contentScale = ContentScale.Crop,
+                            )
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(65.dp)
+                                    .background(Color.Black.copy(alpha = 0.6F))
+                                    .align(Alignment.BottomCenter),
+                            ) {
+                                Row(
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .fillMaxWidth()
+                                            .padding(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Row(
+                                    AsyncImage(
+                                        model = it.owner?.url,
+                                        contentDescription = it.owner?.realname,
                                         modifier =
                                             Modifier
-                                                .align(Alignment.Center)
-                                                .fillMaxWidth()
-                                                .padding(4.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        AsyncImage(
-                                            model = it.value?.owner?.url,
-                                            contentDescription = "${it.value?.owner?.realname}",
-                                            modifier =
-                                                Modifier
-                                                    .clickable {
-                                                        it.value?.owner?.let { owner ->
-                                                            updateSearchByUser(
-                                                                owner,
-                                                            )
-                                                        }
-                                                    }.size(40.dp)
-                                                    .clip(CircleShape),
-                                            contentScale = ContentScale.FillBounds,
-                                            placeholder = painterResource(R.drawable.ic_avatar),
+                                                .clickable {
+                                                    updateSearchByUser(
+                                                        it.owner,
+                                                    )
+                                                }.size(40.dp)
+                                                .clip(CircleShape),
+                                        contentScale = ContentScale.FillBounds,
+                                        placeholder = painterResource(R.drawable.ic_avatar),
+                                    )
+                                    Column {
+                                        Text(
+                                            text =
+                                                it.owner
+                                                    ?.username
+                                                    .orEmpty(),
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
                                         )
-                                        Column {
-                                            Text(
-                                                text =
-                                                    it.value
-                                                        ?.owner
-                                                        ?.username
-                                                        .orEmpty(),
-                                                color = MaterialTheme.colorScheme.primary,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                            )
-                                        }
                                     }
                                 }
                             }

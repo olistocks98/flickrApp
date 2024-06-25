@@ -4,6 +4,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
     alias(libs.plugins.compose.compiler)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -100,6 +101,9 @@ dependencies {
     implementation ("com.squareup.okhttp3:logging-interceptor:4.5.0")
     implementation ("com.jakewharton.timber:timber:5.0.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.0.0-alpha12")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0-alpha12")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0-alpha12")
 }
 
 

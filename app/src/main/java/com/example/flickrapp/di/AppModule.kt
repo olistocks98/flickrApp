@@ -4,7 +4,6 @@ import com.example.flickrapp.constants.FLICKR_BASE_URL
 import com.example.flickrapp.data.FlickrApi
 import com.example.flickrapp.data.repository.PhotoRepositoryImpl
 import com.example.flickrapp.domain.repository.PhotoRepository
-import com.example.flickrapp.domain.usecase.GetPhotoInfoUseCase
 import com.example.flickrapp.domain.usecase.SearchPhotosUseCase
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
@@ -51,8 +50,4 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSearchPhotoUseCase(searchPhotosRepository : PhotoRepository) : SearchPhotosUseCase =  SearchPhotosUseCase(searchPhotosRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetPhotoInfoUseCase(searchPhotosRepository : PhotoRepository) : GetPhotoInfoUseCase =  GetPhotoInfoUseCase(searchPhotosRepository)
 }
