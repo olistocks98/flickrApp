@@ -119,14 +119,16 @@ fun HomeScreen(
             if (searchUser.value != null || navigator.canNavigateBack()) {
                 BackHandler {
                     updateSearchByUser(null)
-                    navigator.navigateTo(ListDetailPaneScaffoldRole.List)
+                    navigator.navigateBack()
                 }
                 TopAppBar(
                     title = { Text(searchUser.value?.username ?: "") },
                     navigationIcon = {
                         IconButton(onClick = {
                             updateSearchByUser(null)
+                            navigator.navigateBack()
                             navigator.navigateTo(ListDetailPaneScaffoldRole.List)
+
                         }) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, "back")
                         }
