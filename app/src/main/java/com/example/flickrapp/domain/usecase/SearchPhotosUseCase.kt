@@ -34,11 +34,20 @@ class SearchPhotosUseCase(
                     }.toMutableList()
             emit(photoList)
             photoList.forEachIndexed { index, photo ->
-                val photoInfo = photoRepository.getPhotoInfo(photo.id).photo
+                val photoInfo = photoRepository.getPhotoInfo(photo.id)
                 photoList =
                     photoList
-                        .mapIndexed { i, aaa -> if (i == index) aaa.copy(owner = photoInfo.owner) else aaa }
-                        .toMutableList()
+                        .mapIndexed { updatingIndex, updatingPhoto ->
+                            if (index == updatingIndex) {
+                                updatingPhoto.copy(
+                                    owner = photoInfo.photo.owner,
+                                    description = photoInfo.photo.description._content,
+                                    tags = photoInfo.photo.tags.tag
+                                )
+                            } else {
+                                updatingPhoto
+                            }
+                        }.toMutableList()
                 emit(photoList)
             }
         }

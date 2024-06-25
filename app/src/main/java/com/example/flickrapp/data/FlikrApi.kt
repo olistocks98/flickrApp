@@ -53,7 +53,12 @@ data class PhotoInfo(
     val farm: String,
     val dateUploaded: String,
     val owner: Owner,
-    val tags: Tags,
+    val description: Description,
+    val tags : Tag
+)
+
+data class Description(
+    val _content: String = ""
 )
 
 @Parcelize
@@ -69,12 +74,15 @@ data class Owner(
         get() =  "https://farm" + "${iconfarm}.staticflickr.com/${iconserver}/buddyicons/${nsid}.jpg"
 }
 
-data class Tags(
-    val id: String,
-    val author: String,
-    val authorName: String,
+
+data class Tag(
+    val tag: List<O>,
+)
+
+data class O(
     val _content: String,
 )
+
 
 data class PhotosMetaData(
     val page: Int,

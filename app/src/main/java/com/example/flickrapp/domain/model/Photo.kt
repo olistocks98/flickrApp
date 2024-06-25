@@ -1,9 +1,8 @@
 package com.example.flickrapp.domain.model
 
-import android.os.Parcelable
+import com.example.flickrapp.data.O
 import com.example.flickrapp.data.Owner
-import com.example.flickrapp.data.Tags
-import kotlinx.parcelize.Parcelize
+import com.example.flickrapp.data.Tag
 
 data class PhotoInfo(
     val id: String,
@@ -11,14 +10,16 @@ data class PhotoInfo(
     val farm: String,
     val dateUploaded: String,
     val owner: Owner,
-    val tags: Tags,
+    val tags: Tag,
 )
 
-@Parcelize
+
 data class Photo(
     val id: String,
     val url: String,
     val title: String,
+    val description: String = "",
     val dateUploaded: String = "",
-    val owner: Owner? = null
-) : Parcelable
+    val owner: Owner? = null,
+    val tags: List<O> = listOf()
+)
